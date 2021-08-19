@@ -756,8 +756,6 @@ class cf7_sendpdf {
                 // On génère le PDF
                 if( isset($meta_values["disable-pdf"]) && $meta_values['disable-pdf'] == 'false') {
 
-                    require WPCF7PDF_DIR . 'mpdf/vendor/autoload.php';
-
                     if( isset($meta_values['pdf-font'])  ) {
                         $fontPdf = $meta_values['pdf-font'];
                     }
@@ -769,14 +767,27 @@ class cf7_sendpdf {
                     if( isset($meta_values["margin_top"]) && $meta_values["margin_top"]!='' ) { $marginTop = $meta_values["margin_top"]; }
 
                     if( isset($meta_values['pdf-type']) && isset($meta_values['pdf-orientation']) ) {
+                        $modePdf = "utf-8";
                         $formatPdf = $meta_values['pdf-type'].$meta_values['pdf-orientation'];
-                        //$mpdf=new mPDF('utf-8', $formatPdf);
-                        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => $formatPdf, 'margin_header' => $marginHeader, 'margin_top' => $marginTop,]);
                     } else if( isset($meta_values['fillable_data']) && $meta_values['fillable_data']== 'true') {
-                        $mpdf = new \Mpdf\Mpdf(['mode' => 'c', 'format' => $formatPdf, 'margin_header' => $marginHeader, 'margin_top' => $marginTop, 'default_font' => $fontPdf, 'default_font_size' => $fontsizePdf, 'tempDir' => $custom_tmp_path]);
+                        $modePdf = "c";
                     } else {
-                        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4-L', 'margin_header' => $marginHeader, 'margin_top' => $marginTop, 'default_font' => $fontPdf, 'default_font_size' => $fontsizePdf, 'tempDir' => $custom_tmp_path]);
+                        $modePdf = "utf-8";
+                        $formatPdf = "A4-L";
                     }
+                    $mpdf_config = apply_filters("wpcf7pdf_mpdf_config", array(
+                        "mode" => $modePdf,
+                        "format" => $formatPdf,
+                        'margin_header' => $marginHeader,
+                        'margin_top' => $marginTop,
+                        "default_font" => $fontPdf,
+                        "default_font_size" => $fontsizePdf,
+                        'tempDir' => $custom_tmp_path
+                    ));
+                    
+
+                    require WPCF7PDF_DIR . 'mpdf/vendor/autoload.php';
+                    $mpdf = new \Mpdf\Mpdf($mpdf_config);
                     $mpdf->autoScriptToLang = true;
                     $mpdf->baseScript = 1;
                     $mpdf->autoVietnamese = true;

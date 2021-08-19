@@ -239,6 +239,12 @@ jQuery(document).ready(function() {
         }
         if( isset($meta_values['generate_pdf']) && !empty($meta_values['generate_pdf']) ) {
 
+            if( isset($meta_values["margin_header"]) && $meta_values["margin_header"]!='' ) {
+                $marginHeader = $meta_values["margin_header"];
+            }
+            if( isset($meta_values["margin_top"]) && $meta_values["margin_top"]!='' ) {
+                $marginTop = $meta_values["margin_top"];
+            }
             if( isset($meta_values['pdf-type']) && isset($meta_values['pdf-orientation']) ) {
                 $formatPdf = $meta_values['pdf-type'].$meta_values['pdf-orientation'];
             }
@@ -248,21 +254,20 @@ jQuery(document).ready(function() {
             if( isset($meta_values['pdf-fontsize']) && is_numeric($meta_values['pdf-fontsize']) ) {
                 $fontsizePdf = $meta_values['pdf-fontsize'];
             }
+            $modePdf = ( isset($meta_values['fillable_data']) && $meta_values['fillable_data']=='true' ) ? "c" : "utf-8";
+            
+            $mpdf_config = apply_filters("wpcf7pdf_mpdf_config", array(
+                "mode" => $modePdf,
+                "format" => $formatPdf,
+                'margin_header' => $marginHeader,
+                'margin_top' => $marginTop,
+                "default_font" => $fontPdf,
+                "default_font_size" => $fontsizePdf
+            ));
             
             require WPCF7PDF_DIR . 'mpdf/vendor/autoload.php';
-            //$mpdf=new \Mpdf\Mpdf();
-            
-            if( isset($meta_values["margin_header"]) && $meta_values["margin_header"]!='' ) { $marginHeader = $meta_values["margin_header"]; }
-            if( isset($meta_values["margin_top"]) && $meta_values["margin_top"]!='' ) { $marginTop = $meta_values["margin_top"]; }
+            $mpdf=new \Mpdf\Mpdf($mpdf_config);
 
-            if( isset($meta_values['fillable_data']) && $meta_values['fillable_data']== 'true') {
-                $mpdf = new \Mpdf\Mpdf(['mode' => 'c', 'format' => $formatPdf, 'margin_header' => $marginHeader, 'margin_top' => $marginTop, 'default_font' => $fontPdf, 'default_font_size' => $fontsizePdf, 'tempDir' => $custom_tmp_path]);
-            } else {
-                $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => $formatPdf, 'margin_header' => $marginHeader, 'margin_top' => $marginTop, 'default_font' => $fontPdf, 'default_font_size' => $fontsizePdf, 'tempDir' => $custom_tmp_path]);
-            }
-            //var_dump($meta_values);
-            ///exit();
-            //$mpdf=new mPDF('utf-8', $formatPdf);
             $mpdf->autoScriptToLang = true;
             $mpdf->baseScript = 1;
             $mpdf->autoVietnamese = true;
